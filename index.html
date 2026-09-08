@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ravindu Shamalka — 3D & Concept Artist</title>
+<meta name="description" content="Portfolio of Ravindu Shamalka, freelance 3D and concept artist. Creature design, environments, low-poly work, and sketches.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<header class="site-header" id="siteHeader">
+  <a class="brand" href="#top">Ravindu <span>Shamalka</span></a>
+  <nav class="main-nav">
+    <a href="#work">Work</a>
+    <a href="#about">About</a>
+    <a href="#contact">Contact</a>
+    <a class="resume-link" href="Ravindu_Shamalka_Cv.pdf" target="_blank" rel="noopener">Resume</a>
+  </nav>
+  <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="hero-media" id="heroMedia" aria-hidden="true">
+      <div class="hero-layer" id="heroLayerA">
+        <div class="hero-layer-bg"></div>
+        <img class="hero-layer-fg" alt="">
+      </div>
+      <div class="hero-layer" id="heroLayerB">
+        <div class="hero-layer-bg"></div>
+        <img class="hero-layer-fg" alt="">
+      </div>
+    </div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Freelance 3D &amp; Concept Artist</p>
+      <h1 class="hero-title">Building creatures,<br>worlds, and the odd<br>low-poly coffee shop.</h1>
+      <p class="hero-sub">Ravindu Shamalka works across 3D modeling, environment art, and character sketching — from anatomical studies to fully rendered scenes.</p>
+      <div class="hero-actions">
+        <a href="#work" class="btn btn-solid">See the work</a>
+        <a href="#contact" class="btn btn-ghost">Get in touch</a>
+      </div>
+    </div>
+    <div class="hero-scroll" aria-hidden="true"><span></span>Scroll</div>
+  </section>
+
+  <section class="work" id="work">
+    <div class="section-head">
+      <h2>Selected work</h2>
+      <p class="count-note"><span id="visibleCount">0</span> pieces</p>
+    </div>
+
+    <div class="filters" id="filters" role="tablist" aria-label="Filter work by category"></div>
+
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="about" id="about">
+    <div class="about-grid">
+      <div class="about-copy">
+        <h2>About</h2>
+        <p>Ravindu Shamalka is a freelance artist working across 3D and 2D — creature design, hard-surface and environment modeling, low-poly and stylized pieces, and traditional anatomical sketching. The work ranges from quick speed models to fully realized scenes.</p>
+        <p>Full project history, process shots, and video breakdowns live on <a href="https://ravindushamalka.artstation.com/" target="_blank" rel="noopener">ArtStation</a>. This site is a home base — a curated front door to that body of work.</p>
+      </div>
+      <div class="about-side">
+        <div class="stat">
+          <span class="stat-number" id="statCount">0</span>
+          <span class="stat-label">projects and counting</span>
+        </div>
+        <ul class="skills">
+          <li>3D Modeling</li>
+          <li>Environment Art</li>
+          <li>Creature &amp; Character Design</li>
+          <li>Low-Poly &amp; Stylized Art</li>
+          <li>Anatomical Sketching</li>
+          <li>Hard-Surface &amp; Vehicles</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="contact" id="contact">
+    <h2>Let's work together</h2>
+    <p>Open to freelance and collaboration — reach out directly or find more work below.</p>
+    <div class="contact-links">
+      <a href="mailto:ravindu.shamalka@gmail.com" class="btn btn-solid">ravindu.shamalka@gmail.com</a>
+      <a href="https://ravindushamalka.artstation.com/" target="_blank" rel="noopener" class="btn btn-ghost">ArtStation profile</a>
+      <a href="https://www.instagram.com/vision_env?stkn=MWtqeDl5ZHJuZTl4eA==" target="_blank" rel="noopener" class="btn btn-ghost">Instagram</a>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <span>© <span id="year"></span> Ravindu Shamalka</span>
+  <div class="footer-links">
+    <a href="https://ravindushamalka.artstation.com/" target="_blank" rel="noopener">artstation.com/ravindushamalka</a>
+    <a href="https://www.instagram.com/vision_env?stkn=MWtqeDl5ZHJuZTl4eA==" target="_blank" rel="noopener">@vision_env</a>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-hidden="true">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">&times;</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous piece">&#8249;</button>
+  <div class="lightbox-inner">
+    <div class="lightbox-media" id="lightboxMedia"></div>
+    <div class="lightbox-info">
+      <p class="lightbox-category" id="lightboxCategory"></p>
+      <h3 id="lightboxTitle"></h3>
+      <a id="lightboxLink" href="#" target="_blank" rel="noopener">View full project on ArtStation →</a>
+    </div>
+  </div>
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next piece">&#8250;</button>
+</div>
+
+<script src="projects.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
