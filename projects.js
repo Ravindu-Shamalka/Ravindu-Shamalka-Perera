@@ -282,13 +282,13 @@ PROJECTS.unshift(...[
     "title": "Concept of village by ravindu shamalka",
     "url": "https://ravindushamalka.artstation.com/projects/ndJP11",
     "category": "3d",
-    "image": null
+    "image": "https://cdnb.artstation.com/p/assets/images/images/102/974/923/large/ravindu-shamalka-asset.webp?1791218187"
   },
   {
     "title": "Another night by ravindu shamalka",
     "url": "https://ravindushamalka.artstation.com/projects/xd3dAE",
     "category": "3d",
-    "image": null
+    "image": "https://cdnb.artstation.com/p/assets/images/images/102/726/249/large/ravindu-shamalka-asset.webp?1790400399"
   }
 ]);
 // END AUTOMATIC ARTSTATION PROJECTS
