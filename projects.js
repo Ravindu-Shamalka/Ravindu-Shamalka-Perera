@@ -275,3 +275,20 @@ const PROJECTS = [
   { title: "Hunger strike", url: "https://ravindushamalka.artstation.com/projects/lxDe5V", category: "character",
     image: "https://cdna.artstation.com/p/assets/videos/images/029/011/458/large/ravindu-shamalka-maxresdefault.jpg?1596184585" }
 ];
+
+// BEGIN AUTOMATIC ARTSTATION PROJECTS
+PROJECTS.unshift(...[
+  {
+    "title": "Concept of village by ravindu shamalka",
+    "url": "https://ravindushamalka.artstation.com/projects/ndJP11",
+    "category": "3d",
+    "image": null
+  },
+  {
+    "title": "Another night by ravindu shamalka",
+    "url": "https://ravindushamalka.artstation.com/projects/xd3dAE",
+    "category": "3d",
+    "image": null
+  }
+]);
+// END AUTOMATIC ARTSTATION PROJECTS
