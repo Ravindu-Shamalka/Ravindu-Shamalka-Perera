@@ -1,3 +1,67 @@
+#!/usr/bin/env python3
+"""Append new ArtStation projects and refresh missing thumbnails without altering curated entries."""
+import html
+import json
+import re
+import sys
+import urllib.request
+import xml.etree.ElementTree as ET
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+FILE = ROOT / 'projects.js'
+USERNAME = 'ravindushamalka'
+HEADERS = {'User-Agent': 'Mozilla/5.0 (compatible; PortfolioSync/1.0)', 'Accept': 'application/rss+xml, application/json, */*'}
+CONTENT_NS = '{http://purl.org/rss/1.0/modules/content/}encoded'
+
+
+def fetch(url):
+    req = urllib.request.Request(url, headers=HEADERS)
+    with urllib.request.urlopen(req, timeout=25) as response:
+        return response.read()
+
+
+def normalize_url(url):
+    match = re.search(r'(?:artstation\.com/(?:artwork|projects)/|artstn\.co/p/)([A-Za-z0-9]+)', url or '')
+    return f'https://{USERNAME}.artstation.com/projects/{match.group(1)}' if match else None
+
+
+def image_from_markup(markup):
+    """Get the first image from ArtStation RSS HTML or page metadata."""
+    markup = html.unescape(markup or '').replace('\\/', '/')
+    patterns = [
+        r'<meta[^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\'][^>]+content=["\']([^"\']+)',
+        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\']',
+        r'<img[^>]+(?:data-src|src)=["\']([^"\']+)',
+        r'<img[^>]+srcset=["\']([^"\' ,]+)',
+        r'(https?://[^"\'\s<>]+(?:artstation|artstationcdn)[^"\'\s<>]+?\.(?:jpg|jpeg|png|webp)(?:\?[^"\'\s<>]*)?)',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, markup, re.I)
+        if match:
+            url = html.unescape(match.group(1)).replace('\\/', '/')
+            if url.startswith('//'):
+                url = 'https:' + url
+            if url.startswith(('https://', 'http://')):
+                return url
+    return None
+
+
+def project_thumbnail(project_url):
+    """Fallback for projects without an image in RSS."""
+    try:
+        page = fetch(project_url).decode('utf-8', errors='replace')
+        image = image_from_markup(page)
+        if image:
+            return image
+    except Exception as exc:
+        print(f'Thumbnail page unavailable ({project_url}): {exc}')
+    project_id = project_url.rstrip('/').rsplit('/', 1)[-1]
+    try:
+        data = json.loads(fetch(f'https://www.artstation.com/projects/{project_id}.json'))
+        cover = data.get('cover', {})
+        if isinstance(cover, dict):
+            for key in ('large_image_url', 'medium_image_url', 'small_image_url'):
                 if cover.get(key):
                     return cover[key]
         for key in ('cover_url', 'cover_image_url'):
