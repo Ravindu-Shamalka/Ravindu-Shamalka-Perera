@@ -7,7 +7,7 @@ import sys
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 ROOT = Path(__file__).resolve().parents[1]
 FILE = ROOT / 'projects.js'
@@ -23,6 +23,56 @@ def normalize_url(url):
     match = re.search(r'(?:artstation\.com/(?:artwork|projects)/|artstn\.co/p/)([A-Za-z0-9]+)', url or '')
     return f'https://{USERNAME}.artstation.com/projects/{match.group(1)}' if match else None
 
+def image_from_markup(markup):
+    """Read image URLs from RSS HTML or a project's public HTML metadata."""
+    markup = html.unescape(markup or '')
+    patterns = [
+        r'<meta[^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\'][^>]+content=["\']([^"\']+)',
+        r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+(?:property|name)=["\'](?:og:image|twitter:image)["\']',
+        r'<img[^>]+(?:data-src|src)=["\']([^"\']+)',
+        r'<img[^>]+srcset=["\']([^"\' ,]+)',
+        r'https?://[^"\'\s<>]+(?:artstation|artstationcdn)[^"\'\s<>]+?\.(?:jpg|jpeg|png|webp)(?:\?[^"\'\s<>]*)?',
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, markup, re.I)
+        if match:
+            url = html.unescape(match.group(1)).replace('\\/', '/')
+            if url.startswith('//'):
+                url = 'https:' + url
+            if url.startswith('http') and not url.lower().startswith('data:'):
+                return url
+    return None
+
+
+def project_thumbnail(project_url):
+    """Try the public project metadata when RSS omits its cover image."""
+    try:
+        page = fetch(project_url).decode('utf-8', errors='replace')
+        image = image_from_markup(page)
+        if image:
+            return image
+    except Exception as exc:
+        print(f'Thumbnail page unavailable ({project_url}): {exc}')
+    # ArtStation also exposes project details on some public project endpoints.
+    project_id = project_url.rstrip('/').rsplit('/', 1)[-1]
+    try:
+        data = json.loads(fetch(f'https://www.artstation.com/projects/{project_id}.json'))
+        cover = data.get('cover', {})
+        if isinstance(cover, dict):
+            for key in ('large_image_url', 'medium_image_url', 'small_image_url'):
+                if cover.get(key):
+                    return cover[key]
+        for key in ('cover_url', 'cover_image_url'):
+            if data.get(key):
+                return data[key]
+        for asset in data.get('assets', []):
+            for key in ('image_url', 'image_url_large', 'image_url_medium'):
+                if asset.get(key):
+                    return asset[key]
+    except Exception as exc:
+        print(f'Thumbnail API unavailable ({project_id}): {exc}')
+    return None
+
 def from_rss():
     for url in [f'https://www.artstation.com/{USERNAME}.rss', f'https://{USERNAME}.artstation.com/rss']:
         try:
@@ -35,15 +85,14 @@ def from_rss():
                 title = html.unescape(item.findtext('title', 'Untitled artwork'))
                 image = None
                 for node in item.iter():
-                    if node.tag.rsplit('}', 1)[-1] in ('thumbnail', 'content', 'enclosure'):
-                        candidate = node.attrib.get('url')
-                        if candidate and ('image' in node.attrib.get('type', 'image') or 'artstation' in candidate):
+                    if node.tag.rsplit('}', 1)[-1] in ('thumbnail', 'content', 'enclosure', 'image'):
+                        candidate = node.attrib.get('url') or node.attrib.get('href')
+                        if candidate and candidate.startswith(('https://', 'http://')) and ('image' in node.attrib.get('type', 'image') or 'artstation' in candidate):
                             image = candidate
                             break
                 if not image:
                     desc = html.unescape(item.findtext('description', ''))
-                    match = re.search(r'<img[^>]+src=["\']([^"\']+)', desc)
-                    image = match.group(1) if match else None
+                    image = image_from_markup(desc)
                 entries.append({'title': title, 'url': link, 'category': '3d', 'image': image})
             if entries:
                 print(f'RSS: found {len(entries)} recent entries')
@@ -64,7 +113,7 @@ def from_json():
         if not link:
             continue
         entries.append({'title': html.unescape(item.get('title', 'Untitled artwork')), 'url': link,
-                        'category': '3d', 'image': item.get('cover', {}).get('medium_image_url') if isinstance(item.get('cover'), dict) else item.get('cover', {}).get('medium') if isinstance(item.get('cover'), dict) else item.get('cover_url')})
+                        'category': '3d', 'image': (item.get('cover', {}).get('medium_image_url') or item.get('cover', {}).get('large_image_url')) if isinstance(item.get('cover'), dict) else item.get('cover_url')})
     return entries
 
 def main():
@@ -105,6 +154,11 @@ def main():
             by_id[key]['title'] = item['title']
             if item.get('image'):
                 by_id[key]['image'] = item['image']
+    # Fill missing covers for both new and previously synced projects.
+    missing = [item for item in by_id.values() if not item.get('image')]
+    for item in missing:
+        item['image'] = project_thumbnail(item['url'])
+    print(f'Thumbnails recovered: {sum(bool(item.get("image")) for item in missing)} of {len(missing)} missing')
     if not by_id and marker not in original:
         print('All feed projects already present. No changes.')
         return 0
